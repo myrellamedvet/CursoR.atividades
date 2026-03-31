@@ -1,3 +1,3 @@
 # CursoR.atividades
->Atividades do Curso R
+Atividades do Curso R
 >Boletim Epidemiológico de Sífilis Congênita
