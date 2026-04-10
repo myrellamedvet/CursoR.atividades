@@ -1,0 +1,136 @@
+install.packages('readr')
+library(readr)
+install.packages('dplyr')
+library(dplyr)
+library(read.dbc)
+install.packages('tidyverse')
+library(tidyverse)
+
+# localização dos arquivos
+files <- "/cloud/project/SIFCBR23.dbc"
+
+# lista de variáveis e metadados
+list_var <- c("DT_NOTIFIC", "SEM_NOT", "SG_UF_NOT")
+metadados <- read.csv("/cloud/project/selecao_de_variaveis - Página3.csv")
+
+# carrego a base
+sinan.dl <- read.dbc(files)
+
+# descreve a base
+descri <- glimpse(sinan.dl)
+print(descri)
+
+#select
+banco_pequeno <- select(sinan.dl, list_var)
+
+--------------------------------------------------
+
+# ================================
+# 1. INSTALAR E CARREGAR PACOTES
+# ================================
+
+pacotes <- c("dplyr", "skimr", "janitor")
+
+for (pkg in pacotes) {
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+    library(pkg, character.only = TRUE)
+  }
+}
+
+# ================================
+#  2. VISÃO GERAL DO BANCO
+# ================================
+
+# Dimensão (linhas e colunas)
+dim(dados)
+
+# Estrutura das variáveis
+str(dados)
+
+# Nomes das variáveis
+names(dados)
+
+# ================================
+#  3. PADRONIZAR NOMES (opcional, mas recomendado)
+# ================================
+
+dados <- janitor::clean_names(dados)
+
+# ================================
+#  4. RESUMO GERAL AUTOMÁTICO
+# ================================
+
+skimr::skim(dados)
+
+# ================================
+#  5. FREQUÊNCIA DAS VARIÁVEIS CATEGÓRICAS
+# ================================
+
+# Função para frequência
+freq <- function(var) {
+  dados %>%
+    count({{var}}) %>%
+    mutate(percentual = round(100 * n / sum(n), 2))
+}
+
+# Exemplos (ajuste conforme suas variáveis reais)
+
+freq(ant_pre_na)      # pré-natal
+freq(cs_raca)         # raça
+freq(cs_escol_n)      # escolaridade
+freq(evolucao)        # evolução
+freq(classi_fin)      # classificação
+
+# ================================
+#  6. RESUMO DAS VARIÁVEIS NUMÉRICAS
+# ================================
+
+summary(dados)
+
+# Ou mais detalhado:
+dados %>%
+  summarise(
+    idade_mae_media = mean(nu_idade_m, na.rm = TRUE),
+    idade_mae_min = min(nu_idade_m, na.rm = TRUE),
+    idade_mae_max = max(nu_idade_m, na.rm = TRUE),
+    consultas_media = mean(qt_consult, na.rm = TRUE)
+  )
+
+# ================================
+#  7. DADOS FALTANTES
+# ================================
+
+# Quantidade de NA por variável
+colSums(is.na(dados))
+
+# Percentual de NA
+na_percent <- colSums(is.na(dados)) / nrow(dados) * 100
+round(na_percent, 2)
+
+# ================================
+# 8. IDENTIFICAR VARIÁVEIS CODIFICADAS
+# ================================
+
+# Ver valores únicos (ajuda a achar variáveis que precisam de dicionário)
+unique(dados$ant_pre_na)
+
+# Aplicar para várias:
+lapply(dados, unique)
+
+# ================================
+#  9. EXPORTAR RESULTADOS (opcional)
+# ================================
+
+# Exportar base raw em csv
+write.csv(dados, "dados_raw.csv", row.names = FALSE)
+
+# Exportar tabela de NA
+na_df <- data.frame(
+  variavel = names(na_percent),
+  percentual_na = na_percent
+)
+
+write.csv(na_df, "missing_data.csv", row.names = FALSE)
+
+
