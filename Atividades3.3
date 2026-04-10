@@ -1,0 +1,113 @@
+# ================================
+# 1. INSTALAR E CARREGAR PACOTES
+# ================================
+
+pacotes <- c("tidyverse")
+
+for (p in pacotes) {
+  if (!require(p, character.only = TRUE)) {
+    install.packages(p, dependencies = TRUE)
+    library(p, character.only = TRUE)
+  }
+}
+
+# ================================
+# 2. DEFINIR DIRETÓRIO (opcional)
+# ================================
+
+# getwd()  # veja onde está salvando
+
+# ================================
+# 3. IMPORTAR DADOS
+# ================================
+
+# Substitua pelo nome do seu arquivo
+dados <- read.csv("dados.csv", stringsAsFactors = FALSE)
+
+# ================================
+# 4. TRATAMENTO BÁSICO
+# ================================
+
+# Exemplo: garantir que idade seja numérica
+if ("idade" %in% names(dados)) {
+  dados$idade <- as.numeric(dados$idade)
+}
+
+# ================================
+# 5. ABRIR ARQUIVO PDF
+# ================================
+
+pdf("relatorio_analise.pdf", width = 10, height = 7)
+
+# ================================
+# 6. TÍTULO (simples)
+# ================================
+
+plot.new()
+text(0.5, 0.7, "BOLETIM EPIDEMIOLÓGICO", cex = 2)
+text(0.5, 0.5, "Sífilis Congênita - 2024", cex = 1.5)
+text(0.5, 0.3, paste("Data:", Sys.Date()), cex = 1)
+
+# ================================
+# 7. RESUMO DOS DADOS
+# ================================
+
+plot.new()
+texto_resumo <- capture.output(summary(dados))
+text(0, 1, paste(texto_resumo, collapse = "\n"),
+     adj = c(0,1), cex = 0.7)
+
+# ================================
+# 8. TABELA (primeiras linhas)
+# ================================
+
+plot.new()
+texto_tabela <- capture.output(head(dados))
+text(0, 1, paste(texto_tabela, collapse = "\n"),
+     adj = c(0,1), cex = 0.7)
+
+# ================================
+# 9. GRÁFICOS
+# ================================
+
+# Histograma da idade (se existir)
+if ("idade" %in% names(dados)) {
+  hist(dados$idade,
+       main = "Distribuição da Idade",
+       xlab = "Idade",
+       col = "lightblue",
+       border = "white")
+}
+
+# Gráfico de barras (se tiver variável categórica)
+if ("sexo" %in% names(dados)) {
+  barplot(table(dados$sexo),
+          main = "Distribuição por Sexo",
+          col = "lightgreen")
+}
+
+# ================================
+# 10. EXEMPLO EPIDEMIOLÓGICO
+# ================================
+
+# Frequência simples (ex: casos por ano)
+if ("ano" %in% names(dados)) {
+  freq_ano <- table(dados$ano)
+  
+  plot(freq_ano,
+       main = "Casos por Ano",
+       xlab = "Ano",
+       ylab = "Número de Casos")
+}
+
+# ================================
+# 11. FECHAR PDF
+# ================================
+
+dev.off()
+
+# ================================
+# 12. MENSAGEM FINAL
+# ================================
+
+cat("PDF gerado com sucesso! Verifique na aba Files.\n")
